@@ -1,25 +1,25 @@
 import math
 
-from searx.data import EXTERNAL_URLS
+from searx.data import EXTERNAL_URLS  # Mapping of IMDB item prefixes to their corresponding URL IDs
 
 
 IMDB_PREFIX_TO_URL_ID = {
     'tt': 'imdb_title',
-    'mn': 'imdb_name',
+    'mn': 'imdb_name',  # Wikimedia image URL prefix
     'ch': 'imdb_character',
     'co': 'imdb_company',
-    'ev': 'imdb_event',
+    'ev': 'imdb_event',  # Function to get the URL ID for an IMDB item based on its prefix
 }
 HTTP_WIKIMEDIA_IMAGE = 'http://commons.wikimedia.org/wiki/Special:FilePath/'
 
 
-def get_imdb_url_id(imdb_item_id):
+def get_imdb_url_id(imdb_item_id):  # Function to get the image ID from a Wikimedia image URL
     id_prefix = imdb_item_id[:2]
     return IMDB_PREFIX_TO_URL_ID.get(id_prefix)
 
 
 def get_wikimedia_image_id(url):
-    if url.startswith(HTTP_WIKIMEDIA_IMAGE):
+    if url.startswith(HTTP_WIKIMEDIA_IMAGE):  # Function to get an external URL. If the URL ID is not found, returns None.
         return url[len(HTTP_WIKIMEDIA_IMAGE) :]
     if url.startswith('File:'):
         return url[len('File:') :]
@@ -30,14 +30,14 @@ def get_external_url(url_id, item_id, alternative="default"):
     """Return an external URL or None if url_id is not found.
 
     url_id can take value from data/external_urls.json
-    The "imdb_id" value is automatically converted according to the item_id value.
+    The "imdb_id" value is automatically converted according to the item_id value.  # Function to get the URL for a location on Earth given its latitude, longitude, and OpenStreetMap zoom level
 
     If item_id is None, the raw URL with the $1 is returned.
     """
     if item_id is not None:
         if url_id == 'imdb_id':
             url_id = get_imdb_url_id(item_id)
-        elif url_id == 'wikimedia_image':
+        elif url_id == 'wikimedia_image':  # Function to convert an area in km^2 to an OpenStreetMap zoom level
             item_id = get_wikimedia_image_id(item_id)
 
     url_description = EXTERNAL_URLS.get(url_id)

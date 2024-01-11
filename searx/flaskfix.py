@@ -2,11 +2,11 @@
 # lint: pylint
 # pylint: disable=missing-module-docstring
 
-from urllib.parse import urlparse
+from urllib.parse import urlparse  # Importing necessary modules
 
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.serving import WSGIRequestHandler
-
+  # Class to fix the path when the application is behind a reverse proxy
 from searx import settings
 
 
@@ -16,14 +16,14 @@ class ReverseProxyPathFix:
     this to a URL other than / and to an HTTP scheme that is
     different than what is used locally.
 
-    http://flask.pocoo.org/snippets/35/
+    http://flask.pocoo.org/snippets/35/  # Constructor method for ReverseProxyPathFix class
 
     In nginx:
     location /myprefix {
         proxy_pass http://127.0.0.1:8000;
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Scheme $scheme;
+        proxy_set_header X-Scheme $scheme;  # If base_url is specified in settings, these values are given preference over Flask's generics
         proxy_set_header X-Script-Name /myprefix;
         }
 
@@ -34,7 +34,7 @@ class ReverseProxyPathFix:
 
     def __init__(self, wsgi_app):
 
-        self.wsgi_app = wsgi_app
+        self.wsgi_app = wsgi_app  # Method to modify the WSGI environment based on the script name, scheme, and server
         self.script_name = None
         self.scheme = None
         self.server = None
@@ -48,7 +48,7 @@ class ReverseProxyPathFix:
             self.script_name = base_url.path
             if self.script_name.endswith('/'):
                 # remove trailing slash to avoid infinite redirect on the index
-                # see https://github.com/searx/searx/issues/2729
+                # see https://github.com/searx/searx/issues/2729  # Function to patch the application to handle non-root URLs behind a proxy and WSGI, and to serve pages with HTTP/1.1
                 self.script_name = self.script_name[:-1]
             self.scheme = base_url.scheme
             self.server = base_url.netloc
