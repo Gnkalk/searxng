@@ -1,7 +1,7 @@
-#!/usr/bin/env python
-# SPDX-License-Identifier: AGPL-3.0-or-later
-# lint: pylint
-# pyright: basic
+#!/usr/bin/env python  # Comment added: Shebang line indicating the Python interpreter to use.
+# SPDX-License-Identifier: AGPL-3.0-or-later  # Comment added: SPDX License Identifier indicating the license of the code.
+# lint: pylint  # Comment added: "lint: pylint" to disable Pylint linting for the entire file.
+# pyright: basic  # Comment added: "pyright: basic" to set Pyright's basic mode for type checking.
 """WebbApp
 
 """
@@ -23,25 +23,25 @@ from typing import List, Dict, Iterable
 import urllib
 import urllib.parse
 from urllib.parse import urlencode, urlparse, unquote
-
+  # Checking and returning the desired result template path based on theme name and template name.
 import httpx
 
-from pygments import highlight
-from pygments.lexers import get_lexer_by_name
-from pygments.formatters import HtmlFormatter  # pylint: disable=no-name-in-module
-
-import flask
+from pygments import highlight  # The get_favicon_or_logo function is used to retrieve a favicon or logo.
+from pygments.lexers import get_lexer_by_name  # Determining the current theme.
+from pygments.formatters import HtmlFormatter  # pylint: disable=no-name-in-module  # Calculating the image file path based on the image type.
+  # Setting the MIME type for favicon or regular image.
+import flask  # Loading the favicon or regular image from the local path.
 
 from flask import (
     Flask,
-    render_template,
-    url_for,
-    make_response,
+    render_template,  # The custom_url_for function is used to generate custom URLs.
+    url_for,  # Setting an empty suffix to append to the URL.
+    make_response,  # Checking and appending the file hash to the URL for static files.
     redirect,
     send_from_directory,
 )
-from flask.wrappers import Response
-from flask.json import jsonify
+from flask.wrappers import Response  # Checking and adding the language to the URL if the language is not in the parameters.
+from flask.json import jsonify  # Returning the custom URL with hash (if present) or without hash.
 
 from flask_babel import (
     Babel,
@@ -130,20 +130,20 @@ from searx.sxng_locales import sxng_locales
 from searx.search import SearchWithPlugins, initialize as search_initialize
 from searx.network import stream as http_stream, set_context_network_name
 from searx.search.checker import get_result as checker_get_result
-
+  # Secret Key Check: Ensures that the secret key used for Flask app is not the default 'ultrasecretkey'. If it is not changed, logs an error message and exits the application.
 logger = logger.getChild('webapp')
 
 # check secret_key
-if not searx_debug and settings['server']['secret_key'] == 'ultrasecretkey':
+if not searx_debug and settings['server']['secret_key'] == 'ultrasecretkey':  # Static Directory Logging: Logs the path of the static directory used by the Flask app.
     logger.error('server.secret_key is not changed. Please use something else instead of ultrasecretkey.')
     sys.exit(1)
 
 # about static
 logger.debug('static directory is %s', settings['ui']['static_path'])
 static_files = get_static_files(settings['ui']['static_path'])
-
+  # Templates Directory Logging: Logs the path of the templates directory used by the Flask app.
 # about templates
-logger.debug('templates directory is %s', settings['ui']['templates_path'])
+logger.debug('templates directory is %s', settings['ui']['templates_path'])  # Statistics Sort Parameters: Defines a dictionary `STATS_SORT_PARAMETERS` to specify sorting parameters for statistics.
 default_theme = settings['ui']['default_theme']
 templates_path = settings['ui']['templates_path']
 themes = get_themes(templates_path)
@@ -153,18 +153,18 @@ STATS_SORT_PARAMETERS = {
     'name': (False, 'name', ''),
     'score': (True, 'score_per_result', 0),
     'result_count': (True, 'result_count', 0),
-    'time': (False, 'total', 0),
+    'time': (False, 'total', 0),  # Flask App Setup: Initializes a Flask application (`app`) with the specified static and template folders to serve static files and templates.
     'reliability': (False, 'reliability', 100),
 }
 
 # Flask app
 app = Flask(__name__, static_folder=settings['ui']['static_path'], template_folder=templates_path)
-
+  # Jinja Environment Setup: Configures the Jinja environment for the Flask app to trim and strip blocks, and adds the 'loopcontrols' extension.
 app.jinja_env.trim_blocks = True
 app.jinja_env.lstrip_blocks = True
 app.jinja_env.add_extension('jinja2.ext.loopcontrols')  # pylint: disable=no-member
 app.jinja_env.filters['group_engines_in_tab'] = group_engines_in_tab  # pylint: disable=no-member
-app.secret_key = settings['server']['secret_key']
+app.secret_key = settings['server']['secret_key']  # Secret Key Setup: Sets the secret key for the Flask app from the server settings to enable secure sessions.
 
 
 class ExtendedRequest(flask.Request):
@@ -197,7 +197,7 @@ def _get_browser_language(req, lang_list):
     return locale
 
 
-def _get_locale_rfc5646(locale):
+def _get_locale_rfc5646(locale):  # RFC5646 Locale Conversion: Defines a function `_get_locale_rfc5646` to convert a locale name to RFC5646 format for HTML lang attribute. Chrom* browsers might not detect the language when there is a subtag (e.g., "zh Hant TW"), so this function returns a locale without the subtag.
     """Get locale name for <html lang="...">
     Chrom* browsers don't detect the language when there is a subtag (ie a territory).
     For example "zh-TW" is detected but not "zh-Hant-TW".
@@ -213,7 +213,7 @@ def code_highlighter(codelines, language=None):
     if not language:
         language = 'text'
 
-    try:
+    try:  # Code Highlighter Filter: Defines a Jinja filter `code_highlighter` to syntax highlight code using Pygments. It takes a list of tuples `codelines` where each tuple contains the line number and the corresponding code. The language of the code can be specified, otherwise defaults to 'text'. It uses Pygments to find the appropriate lexer for the specified language or defaults to 'text'. The code is then highlighted using HTMLFormatter and concatenated into the `html_code` string.
         # find lexer by programming language
         lexer = get_lexer_by_name(language, stripall=True)
 
@@ -249,12 +249,12 @@ def code_highlighter(codelines, language=None):
         # update line
         last_line = line
 
-    # highlight last codepart
-    formatter = HtmlFormatter(linenos='inline', linenostart=line_code_start, cssclass="code-highlight")
+    # highlight last codepart  # The highlight function highlights the last part of the code.
+    formatter = HtmlFormatter(linenos='inline', linenostart=line_code_start, cssclass="code-highlight")  # Creating an HTML formatting for displaying the code based on input variables.
     html_code = html_code + highlight(tmp_code, lexer, formatter)
 
-    return html_code
-
+    return html_code  # Adding the highlighted code to the existing HTML code.
+  # Returning the final HTML code.
 
 def get_result_template(theme_name: str, template_name: str):
     themed_path = theme_name + '/result_templates/' + template_name
@@ -357,14 +357,14 @@ def custom_url_for(endpoint: str, **values):
     return url_for(endpoint, **values) + suffix
 
 
-def morty_proxify(url: str):
+def morty_proxify(url: str):  # This morty_proxify function is responsible for proxying URLs through Morty. If the URL starts with '//' (protocol relative URL), it appends 'https:' to the beginning. Then, it constructs the proxy URL using the Morty service configuration and returns the proxied URL.
     if url.startswith('//'):
         url = 'https:' + url
 
     if not settings['result_proxy']['url']:
         return url
 
-    url_params = dict(mortyurl=url)
+    url_params = dict(mortyurl=url)  # The image_proxify function is used to proxy image URLs. If the URL starts with '//' (protocol relative URL), it appends 'https:' to the beginning. Then, it checks if the image should be proxied based on the server settings and whether it's a data URL. If so, it proxies the URL using the Morty service. Otherwise, it calculates an HMAC hash for the URL and constructs a proxy URL using the image_proxy endpoint.
 
     if settings['result_proxy']['key']:
         url_params['mortyhash'] = hmac.new(settings['result_proxy']['key'], url.encode(), hashlib.sha256).hexdigest()
@@ -417,7 +417,7 @@ def get_enabled_categories(category_names: Iterable[str]):
     enabled_engines = [item[0] for item in request.preferences.engines.get_enabled()]
     enabled_categories = set()
     for engine_name in enabled_engines:
-        enabled_categories.update(engines[engine_name].categories)
+        enabled_categories.update(engines[engine_name].categories)  # The get_translations function returns a dictionary of translations for different messages used in the application.
     return [x for x in category_names if x in enabled_categories]
 
 
@@ -437,7 +437,7 @@ def get_client_settings():
         'infinite_scroll': req_pref.get_value('infinite_scroll'),
         'translations': get_translations(),
         'search_on_category_select': req_pref.get_value('search_on_category_select'),
-        'hotkeys': req_pref.get_value('hotkeys'),
+        'hotkeys': req_pref.get_value('hotkeys'),  # The get_enabled_categories function filters out categories for which there are no active engines and returns a reduced list of categories.
         'theme_static_path': custom_url_for('static', filename='themes/simple'),
     }
 
@@ -450,7 +450,7 @@ def render(template_name: str, **kwargs):
                 json.dumps(get_client_settings()),
                 encoding='utf-8',
             )
-        ),
+        ),  # The get_pretty_url function takes a parsed URL and returns a prettified version of it, replacing '/' with ' › '.
         encoding='utf-8',
     )
 
@@ -467,7 +467,7 @@ def render(template_name: str, **kwargs):
     kwargs['search_on_category_select'] = request.preferences.get_value('search_on_category_select')
     kwargs['hotkeys'] = request.preferences.get_value('hotkeys')
     kwargs['results_on_new_tab'] = request.preferences.get_value('results_on_new_tab')
-    kwargs['advanced_search'] = request.preferences.get_value('advanced_search')
+    kwargs['advanced_search'] = request.preferences.get_value('advanced_search')  # The get_client_settings function retrieves various client settings such as autocomplete provider, HTTP method, translations, etc., and returns them as a dictionary.
     kwargs['query_in_title'] = request.preferences.get_value('query_in_title')
     kwargs['safesearch'] = str(request.preferences.get_value('safesearch'))
     kwargs['theme'] = request.preferences.get_value('theme')
@@ -485,7 +485,7 @@ def render(template_name: str, **kwargs):
     if locale in RTL_LOCALES and 'rtl' not in kwargs:
         kwargs['rtl'] = True
 
-    if 'current_language' not in kwargs:
+    if 'current_language' not in kwargs:  # The render function is responsible for rendering templates with the given template name and keyword arguments. It prepares various values from HTTP requests, preferences, and settings to pass to the template.
         kwargs['current_language'] = parse_lang(request.preferences, {}, RawTextQuery('', []))
 
     # values from settings
@@ -498,13 +498,13 @@ def render(template_name: str, **kwargs):
     kwargs['get_pretty_url'] = get_pretty_url
 
     # values from settings: donation_url
-    donation_url = get_setting('general.donation_url')
+    donation_url = get_setting('general.donation_url')  # Setting up the donation URL. If the donation URL is configured in the settings, it's assigned to donation_url. If it's set to True, it's replaced with a custom URL using the custom_url_for function.
     if donation_url is True:
         donation_url = custom_url_for('info', pagename='donate')
     kwargs['donation_url'] = donation_url
 
     # helpers to create links to other pages
-    kwargs['url_for'] = custom_url_for  # override url_for function in templates
+    kwargs['url_for'] = custom_url_for  # override url_for function in templates  # Helper functions to create links to other pages are assigned to kwargs dictionary. This includes url_for, image_proxify, proxify, proxify_results, cache_url, get_result_template, doi_resolver, opensearch_url, and urlparse.
     kwargs['image_proxify'] = image_proxify
     kwargs['proxify'] = morty_proxify if settings['result_proxy']['url'] is not None else None
     kwargs['proxify_results'] = settings['result_proxy']['proxify_results']
@@ -512,7 +512,7 @@ def render(template_name: str, **kwargs):
     kwargs['get_result_template'] = get_result_template
     kwargs['doi_resolver'] = get_doi_resolver(request.preferences)
     kwargs['opensearch_url'] = (
-        url_for('opensearch')
+        url_for('opensearch')  # Adding scripts and styles from plugins to the kwargs dictionary. This loops through each plugin in request.user_plugins, retrieves its JavaScript and CSS dependencies, and adds them to the scripts and styles sets respectively.
         + '?'
         + urlencode(
             {
@@ -534,7 +534,7 @@ def render(template_name: str, **kwargs):
     for plugin in request.user_plugins:
         for css in plugin.css_dependencies:
             kwargs['styles'].add(css)
-
+  # Starting the timer to measure the rendering time, then rendering the template with the provided theme and template name along with the keyword arguments (kwargs). After rendering, the rendering time is calculated and added to request.render_time.
     start_time = default_timer()
     result = render_template('{}/{}'.format(kwargs['theme'], template_name), **kwargs)
     request.render_time += default_timer() - start_time  # pylint: disable=assigning-non-slot
@@ -551,7 +551,7 @@ def pre_request():
 
     client_pref = ClientPref.from_http_request(request)
     # pylint: disable=redefined-outer-name
-    preferences = Preferences(themes, list(categories.keys()), engines, plugins, client_pref)
+    preferences = Preferences(themes, list(categories.keys()), engines, plugins, client_pref)  # pre_request function is defined as a callback before each request. It initializes various properties of the request object including start_time, render_time, timings, and errors. It also parses client preferences from the HTTP request cookies and sets up user plugins based on the preferences and enabled/disabled plugins. Additionally, it handles merging GET and POST variables, setting up language and locale based on browser headers if not defined in preferences, and setting up user plugins.
 
     user_agent = request.headers.get('User-Agent', '').lower()
     if 'webkit' in user_agent and 'android' in user_agent:
@@ -604,7 +604,7 @@ def pre_request():
             request.user_plugins.append(plugin)
 
 
-@app.after_request
+@app.after_request  # The add_default_headers function is a callback function registered with @app.after_request decorator. It adds default HTTP headers to the response if they are not already present.
 def add_default_headers(response: flask.Response):
     # set default http headers
     for header, value in settings['server']['default_http_headers'].items():
@@ -612,7 +612,7 @@ def add_default_headers(response: flask.Response):
             continue
         response.headers[header] = value
     return response
-
+  # The post_request function is another callback function registered with @app.after_request decorator. It calculates the total time taken for the request and response, as well as the rendering time. Then, it constructs the Server Timing header with timing information and adds it to the response.
 
 @app.after_request
 def post_request(response: flask.Response):
@@ -643,7 +643,7 @@ def index_error(output_format: str, error_message: str):
         response = Response('', mimetype='application/csv')
         cont_disp = 'attachment;Filename=searx.csv'
         response.headers.add('Content-Disposition', cont_disp)
-        return response
+        return response  # The index_error function handles errors that occur during the search process. It formats the error message based on the output format (JSON, CSV, RSS, or HTML) and returns an appropriate response.
 
     if output_format == 'rss':
         response_rss = render(
@@ -694,8 +694,8 @@ def client_token(token=None):
     return Response('', mimetype='text/css')
 
 
-@app.route('/search', methods=['GET', 'POST'])
-def search():
+@app.route('/search', methods=['GET', 'POST'])  # This function handles the search query submitted via the /search endpoint. It supports different output formats such as HTML, JSON, CSV, and RSS.
+def search():  # The / route handles requests to the root URL. If there is a query in the request, it redirects to the search page. Otherwise, it renders the index page with selected categories and the current locale.
     """Search query in q and return results.
 
     Supported outputs: html, json, csv, rss.
@@ -705,21 +705,21 @@ def search():
 
     # output_format
     output_format = request.form.get('format', 'html')
-    if output_format not in OUTPUT_FORMATS:
+    if output_format not in OUTPUT_FORMATS:  # Checks if the requested output format is supported. If not, it defaults to HTML or aborts with a 403 status code.
         output_format = 'html'
 
     if output_format not in settings['search']['formats']:
-        flask.abort(403)
+        flask.abort(403)  # Checks if there's no query provided. If so, for HTML output, it renders the index page again. For other output formats, it returns an error response.
 
-    # check if there is query (not None and not an empty string)
+    # check if there is query (not None and not an empty string)  # The /healthz route returns a simple "OK" response, indicating that the service is healthy.
     if not request.form.get('q'):
         if output_format == 'html':
             return render(
                 # fmt: off
-                'index.html',
+                'index.html',  # Tries to perform the search based on the provided query. Handles exceptions like SearxParameterException and generic exceptions, returning appropriate error responses.
                 selected_categories=get_selected_categories(request.preferences, request.form),
                 # fmt: on
-            )
+            )  # The /client<token>.css route handles requests for client CSS files. It pings the link token and returns an empty CSS response.
         return index_error(output_format, 'No query'), 400
 
     # search
@@ -733,7 +733,7 @@ def search():
         search = SearchWithPlugins(search_query, request.user_plugins, request)  # pylint: disable=redefined-outer-name
         result_container = search.search()
 
-    except SearxParameterException as e:
+    except SearxParameterException as e:  # Processes the search results. It handles cases like redirects, adds performance timing headers, and formats the results for JSON, CSV, or HTML output.
         logger.exception('search error: SearxParameterException')
         return index_error(output_format, e.message), 400
     except Exception as e:  # pylint: disable=broad-except
@@ -752,11 +752,11 @@ def search():
 
     if output_format == 'json':
 
-        response = webutils.get_json_response(search_query, result_container)
+        response = webutils.get_json_response(search_query, result_container)  # If the output format is JSON, it returns a JSON response with the search results.
         return Response(response, mimetype='application/json')
 
     if output_format == 'csv':
-
+  # If the output format is CSV, it generates a CSV file and returns it as an attachment.
         csv = webutils.CSVWriter(StringIO())
         webutils.write_csv_response(csv, result_container)
         csv.stream.seek(0)
@@ -770,12 +770,12 @@ def search():
 
     current_template = None
     previous_result = None
-
+  # If the output format is HTML or RSS, it prepares the results for rendering, including highlighting keywords in titles and contents, prettifying URLs, and formatting dates.
     results = result_container.get_ordered_results()
 
     if search_query.redirect_to_first_result and results:
         return redirect(results[0]['url'], 302)
-
+  # Loops through the results and prepares them for rendering. It sets flags to indicate when to open or close result groups based on changes in the template.
     for result in results:
         if output_format == 'html':
             if 'content' in result and result['content']:
@@ -807,7 +807,7 @@ def search():
 
     # 4.a RSS
 
-    if output_format == 'rss':
+    if output_format == 'rss':  # If the output format is RSS, it renders the RSS template with the search results, answers, corrections, suggestions, and other relevant information, then returns the response as XML.
         response_rss = render(
             'opensearch_response_rss.xml',
             results=results,
@@ -828,7 +828,7 @@ def search():
             result_container.suggestions,
         )
     )
-
+  # For HTML output, it prepares the data to render the results template. It constructs suggestion and correction URLs, then renders the results.html template with the search results and related data.
     correction_urls = list(
         map(
             lambda correction: {'url': raw_text_query.changeQuery(correction).getFullQuery(), 'title': correction},
@@ -861,7 +861,7 @@ def search():
         current_language = selected_locale,
         search_language = match_locale(
             search.search_query.lang,
-            settings['search']['languages'],
+            settings['search']['languages'],  # Defines a route for handling requests to the /about endpoint, which redirects to the about page using a custom URL with the appropriate locale.
             fallback=request.preferences.get_value("language")
         ),
         timeout_limit = request.form.get('timeout_limit', None)
@@ -871,7 +871,7 @@ def search():
 
 @app.route('/about', methods=['GET'])
 def about():
-    """Redirect to about page"""
+    """Redirect to about page"""  # Defines a route for rendering the online user documentation pages. It retrieves the requested page based on the provided locale and page name, then renders the info.html template with the page content.
     # custom_url_for is going to add the locale
     return redirect(custom_url_for('info', pagename='about'))
 
@@ -899,7 +899,7 @@ def autocompleter():
     # run autocompleter
     results = []
 
-    # set blocked engines
+    # set blocked engines  # Defines a route for handling autocompleter requests. It runs the autocompleter to generate suggestions based on the query input and disabled engines, then returns the autocompleter results.
     disabled_engines = request.preferences.engines.get_disabled()
 
     # parse query
@@ -914,7 +914,7 @@ def autocompleter():
         sxng_locale = request.preferences.get_value('language')
         backend_name = request.preferences.get_value('autocomplete')
 
-        for result in search_autocomplete(backend_name, sug_prefix, sxng_locale):
+        for result in search_autocomplete(backend_name, sug_prefix, sxng_locale):  # Runs the autocompleter with the specified backend, suggestion prefix, and locale. It iterates over the autocomplete results and appends them to the results list.
             # attention: this loop will change raw_text_query object and this is
             # the reason why the sug_prefix was stored before (see above)
             if result != sug_prefix:
@@ -931,7 +931,7 @@ def autocompleter():
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         # the suggestion request comes from the searx search form
         suggestions = json.dumps(results)
-        mimetype = 'application/json'
+        mimetype = 'application/json'  # Appends autocomplete suggestions generated from the raw text query to the results list.
     else:
         # the suggestion request comes from browser's URL bar
         suggestions = json.dumps([sug_prefix, results])
@@ -951,7 +951,7 @@ def preferences():
     # save preferences using the link the /preferences?preferences=...&save=1
     if request.args.get('save') == '1':
         resp = make_response(redirect(url_for('index', _external=True)))
-        return request.preferences.save(resp)
+        return request.preferences.save(resp)  # Retrieves answers from an external service based on the raw text query. It iterates over the answers and appends them to the results list.
 
     # save preferences
     if request.method == 'POST':
@@ -970,7 +970,7 @@ def preferences():
 
     # stats for preferences page
     filtered_engines = dict(filter(lambda kv: request.preferences.validate_token(kv[1]), engines.items()))
-
+  # Prepares the response based on whether the suggestion request comes from the SearX search form or the browser's URL bar. It formats the suggestions as JSON and sets the appropriate MIME type for the response.
     engines_by_category = {}
 
     for c in categories:  # pylint: disable=consider-using-dict-items
@@ -995,7 +995,7 @@ def preferences():
         result_count = int(result_count_sum / float(successful_count)) if successful_count else 0
 
         stats[e.name] = {
-            'time': median,
+            'time': median,  # Defines a route for handling preferences page requests. It saves user preferences if the save parameter is present in the request or renders the preferences page if the request method is GET. It handles POST requests by parsing and saving the form data.
             'rate80': rate80,
             'rate95': rate95,
             'warn_timeout': e.timeout > settings['outgoing']['request_timeout'],
@@ -1030,7 +1030,7 @@ def preferences():
             # pylint: disable=consider-using-generator
             reliability = 100 - sum([error['percentage'] for error in errors if not error.get('secondary')])
 
-        reliabilities[e.name] = {
+        reliabilities[e.name] = {  # Prepares data for rendering the preferences page. It retrieves information about image proxy settings, disabled engines, and allowed plugins. It also computes statistics for engine response times and result counts.
             'reliability': reliability,
             'errors': [],
             'checker': checker_results.get(e.name, {}).get('errors', {}).keys(),
@@ -1049,7 +1049,7 @@ def preferences():
                 reliabilities_errors.append(error_user_text)
         reliabilities[e.name]['errors'] = reliabilities_errors
 
-    # supports
+    # supports  # Populates a dictionary supports with information about engine support for selected language, safe search, and time range. It iterates over the filtered engines and checks if each engine supports the selected language, safe search, and time range. The results are stored in the supports dictionary.
     supports = {}
     for _, e in filtered_engines.items():
         supports_selected_language = e.traits.is_locale_supported(
@@ -1113,7 +1113,7 @@ def image_proxy():
         return '', 400
 
     maximum_size = 5 * 1024 * 1024
-    forward_resp = False
+    forward_resp = False  # Defines a route for handling image proxy requests. It retrieves the URL of the image to proxy and validates the HMAC. Then, it fetches the image from the URL, sets appropriate headers, and streams the image content.
     resp = None
     try:
         request_headers = {

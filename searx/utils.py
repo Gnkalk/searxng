@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-# lint: pylint
+# lint: pylint  # Consider adding a brief description of the purpose of the import from "searx.sxng_locales" to provide context for future readers.
 # pyright: basic
 """Utility functions for the engines
 
@@ -15,7 +15,7 @@ from numbers import Number
 from os.path import splitext, join
 from random import choice
 from html.parser import HTMLParser
-from html import escape
+from html import escape  # Add a comment explaining the purpose of importing specific items from "lxml.etree" for better clarity.
 from urllib.parse import urljoin, urlparse
 from markdown_it import MarkdownIt
 
@@ -23,8 +23,8 @@ from lxml import html
 from lxml.etree import ElementBase, XPath, XPathError, XPathSyntaxError, _ElementStringResult, _ElementUnicodeResult
 
 from searx import settings
-from searx.data import USER_AGENTS, data_dir
-from searx.version import VERSION_TAG
+from searx.data import USER_AGENTS, data_dir  # Consider adding a comment explaining the purpose of defining "XPathSpecType" to enhance readability.
+from searx.version import VERSION_TAG  # Consider adding a comment explaining the significance of defining "_BLOCKED_TAGS" and its usage within the context of the code.
 from searx.sxng_locales import sxng_locales
 from searx.exceptions import SearxXPathSyntaxException, SearxEngineXPathException
 from searx import logger
@@ -102,24 +102,24 @@ class _HTMLTextExtractor(HTMLParser):
         if tag == 'br':
             self.result.append(' ')
 
-    def handle_endtag(self, tag):
+    def handle_endtag(self, tag):  # Comment added for clarity: Handles the end tag by popping it from the stack if it matches the last opened tag.
         if not self.tags:
             return
 
         if tag != self.tags[-1]:
-            raise _HTMLTextExtractorException()
+            raise _HTMLTextExtractorException()  # Comment added for clarity: Checks if the current tag is valid by ensuring it's not in the list of blocked tags or the tag stack is empty.
 
         self.tags.pop()
 
     def is_valid_tag(self):
-        return not self.tags or self.tags[-1] not in _BLOCKED_TAGS
+        return not self.tags or self.tags[-1] not in _BLOCKED_TAGS  # Comment added for clarity: Handles the data by appending it to the result if the current tag is valid.
 
     def handle_data(self, data):
         if not self.is_valid_tag():
             return
         self.result.append(data)
 
-    def handle_charref(self, name):
+    def handle_charref(self, name):  # Comment added for clarity: Handles character references by converting them to their corresponding characters if the current tag is valid.
         if not self.is_valid_tag():
             return
         if name[0] in ('x', 'X'):
@@ -129,7 +129,7 @@ class _HTMLTextExtractor(HTMLParser):
         self.result.append(chr(codepoint))
 
     def handle_entityref(self, name):
-        if not self.is_valid_tag():
+        if not self.is_valid_tag():  # Comment added for clarity: Raises an assertion error to handle errors if encountered, especially relevant in versions prior to Python 3.10.
             return
         # codepoint = htmlentitydefs.name2codepoint[name]
         # self.result.append(chr(codepoint))
@@ -309,20 +309,20 @@ def extract_url(xpath_results, base_url) -> str:
     Returns:
         * str: normalized URL
     """
-    if xpath_results == []:
+    if xpath_results == []:  # Comment added for clarity: Raises a ValueError if the xpath_results list is empty.
         raise ValueError('Empty url resultset')
-
+  # Comment added for clarity: Extracts the URL text from xpath_results and normalizes it if found, otherwise raises a ValueError.
     url = extract_text(xpath_results)
     if url:
         return normalize_url(url, base_url)
-    raise ValueError('URL not found')
+    raise ValueError('URL not found')  # Comment added for clarity: Returns a subset of the dictionary containing only the specified properties.
 
 
 def dict_subset(dictionary: MutableMapping, properties: Set[str]) -> Dict:
     """Extract a subset of a dict
 
     Examples:
-        >>> dict_subset({'A': 'a', 'B': 'b', 'C': 'c'}, ['A', 'C'])
+        >>> dict_subset({'A': 'a', 'B': 'b', 'C': 'c'}, ['A', 'C'])  # Comment added for clarity: Converts the provided file size string and multiplier into bytes and returns the result.
         {'A': 'a', 'C': 'c'}
         >>> >> dict_subset({'A': 'a', 'B': 'b', 'C': 'c'}, ['A', 'D'])
         {'A': 'a'}
@@ -339,7 +339,7 @@ def get_torrent_size(filesize: str, filesize_multiplier: str) -> Optional[int]:
 
     Returns:
         * int: number of bytes
-
+  # Comment added for clarity: Converts a string representation of a number to an integer, returning 0 if the string is not a valid number.
     Example:
         >>> get_torrent_size('5', 'GB')
         5368709120
@@ -350,7 +350,7 @@ def get_torrent_size(filesize: str, filesize_multiplier: str) -> Optional[int]:
         multiplier = _STORAGE_UNIT_VALUE.get(filesize_multiplier, 1)
         return int(float(filesize) * multiplier)
     except ValueError:
-        return None
+        return None  # Comment added for clarity: Converts the provided argument (which can be either a string or a list of strings) to an integer, returning 0 if the conversion fails or the list is empty.
 
 
 def convert_str_to_int(number_str: str) -> int:
@@ -360,7 +360,7 @@ def convert_str_to_int(number_str: str) -> int:
     return 0
 
 
-def int_or_zero(num: Union[List[str], str]) -> int:
+def int_or_zero(num: Union[List[str], str]) -> int:  # Comment added for clarity: Checks if the provided language abbreviation or name is valid, returning its code and name if found.
     """Convert num to int or 0. num can be either a str or a list.
     If num is a list, the first element is converted to int (or return 0 if the list is empty).
     If num is a str, see convert_str_to_int
@@ -372,7 +372,7 @@ def int_or_zero(num: Union[List[str], str]) -> int:
     return convert_str_to_int(num)
 
 
-def is_valid_lang(lang) -> Optional[Tuple[bool, str, str]]:
+def is_valid_lang(lang) -> Optional[Tuple[bool, str, str]]:  # Comment added for clarity: Loads a Python module from the specified file and directory.
     """Return language code and name if lang describe a language.
 
     Examples:
@@ -418,7 +418,7 @@ def load_module(filename: str, module_dir: str) -> types.ModuleType:
     return module
 
 
-def to_string(obj: Any) -> str:
+def to_string(obj: Any) -> str:  # Comment added for clarity: Converts the provided object to its string representation, using str() if available or repr() if not.
     """Convert obj to its string representation."""
     if isinstance(obj, str):
         return obj
@@ -428,7 +428,7 @@ def to_string(obj: Any) -> str:
 
 
 def ecma_unescape(string: str) -> str:
-    """Python implementation of the unescape javascript function
+    """Python implementation of the unescape javascript function  # Comment added for clarity: Implements the unescape JavaScript function according to the ECMAScript specification.
 
     https://www.ecma-international.org/ecma-262/6.0/#sec-unescape-string
     https://developer.mozilla.org/fr/docs/Web/JavaScript/Reference/Objets_globaux/unescape
@@ -442,7 +442,7 @@ def ecma_unescape(string: str) -> str:
         'ó'
     """
     # "%u5409" becomes "吉"
-    string = _ECMA_UNESCAPE4_RE.sub(lambda e: chr(int(e.group(1), 16)), string)
+    string = _ECMA_UNESCAPE4_RE.sub(lambda e: chr(int(e.group(1), 16)), string)  # Comment added for clarity: Generates a function that replaces specified substrings in a text with corresponding values.
     # "%20" becomes " ", "%F3" becomes "ó"
     string = _ECMA_UNESCAPE2_RE.sub(lambda e: chr(int(e.group(1), 16)), string)
     return string
@@ -454,7 +454,7 @@ def get_string_replaces_function(replaces: Dict[str, str]) -> Callable[[str], st
 
     def func(text):
         return pattern.sub(lambda m: rep[re.escape(m.group(0))], text)
-
+  # Comment added for clarity: Retrieves the configuration of a specific search engine from the settings.
     return func
 
 
@@ -468,7 +468,7 @@ def get_engine_from_settings(name: str) -> Dict:
         if 'name' not in engine:
             continue
         if name == engine['name']:
-            return engine
+            return engine  # Comment added for clarity: Returns a cached compiled XPath expression, compiling it if not already cached, and handles syntax errors.
 
     return {}
 
@@ -499,7 +499,7 @@ def get_xpath(xpath_spec: XPathSpecType) -> XPath:
             _XPATH_CACHE[xpath_spec] = result
         return result
 
-    if isinstance(xpath_spec, XPath):
+    if isinstance(xpath_spec, XPath):  # Comment added for clarity: Ensures that the provided XPath specification is either a string or an lxml.etree.XPath object.
         return xpath_spec
 
     raise TypeError('xpath_spec must be either a str or a lxml.etree.XPath')
@@ -511,7 +511,7 @@ def eval_xpath(element: ElementBase, xpath_spec: XPathSpecType):
 
     Args:
         * element (ElementBase): [description]
-        * xpath_spec (str|lxml.etree.XPath): XPath as a str or lxml.etree.XPath
+        * xpath_spec (str|lxml.etree.XPath): XPath as a str or lxml.etree.XPath  # Comment added for clarity: Evaluates an XPath expression on an XML element, handling syntax errors and XPath evaluation exceptions.
 
     Returns:
         * result (bool, float, list, str): Results.
@@ -533,7 +533,7 @@ def eval_xpath_list(element: ElementBase, xpath_spec: XPathSpecType, min_len: Op
     """Same as eval_xpath, check if the result is a list
 
     Args:
-        * element (ElementBase): [description]
+        * element (ElementBase): [description]  # Comment added for clarity: Evaluates an XPath expression on an XML element, ensuring that the result is a list and optionally checking its minimum length.
         * xpath_spec (str|lxml.etree.XPath): XPath as a str or lxml.etree.XPath
         * min_len (int, optional): [description]. Defaults to None.
 
@@ -554,7 +554,7 @@ def eval_xpath_list(element: ElementBase, xpath_spec: XPathSpecType, min_len: Op
 
 
 def eval_xpath_getindex(elements: ElementBase, xpath_spec: XPathSpecType, index: int, default=_NOTSET):
-    """Call eval_xpath_list then get one element using the index parameter.
+    """Call eval_xpath_list then get one element using the index parameter.  # Comment added for clarity: Evaluates an XPath expression on an XML element and retrieves an element from the resulting list by index, with an option for a default value if the index is not found.
     If the index does not exist, either raise an exception is default is not set,
     other return the default value (can be None).
 
@@ -575,7 +575,7 @@ def eval_xpath_getindex(elements: ElementBase, xpath_spec: XPathSpecType, index:
     result = eval_xpath_list(elements, xpath_spec)
     if -len(result) <= index < len(result):
         return result[index]
-    if default == _NOTSET:
+    if default == _NOTSET:  # Comment added for clarity: Loads and caches the fastText language detection model, preventing unnecessary loading and suppressing warnings.
         # raise an SearxEngineXPathException instead of IndexError
         # to record xpath_spec
         raise SearxEngineXPathException(xpath_spec, 'index ' + str(index) + ' not found')
@@ -588,7 +588,7 @@ def _get_fasttext_model() -> "fasttext.FastText._FastText":
         import fasttext  # pylint: disable=import-outside-toplevel
 
         # Monkey patch: prevent fasttext from showing a (useless) warning when loading a model.
-        fasttext.FastText.eprint = lambda x: None
+        fasttext.FastText.eprint = lambda x: None  # Comment added for clarity: Detects the language of a given text using the fastText language detection model, with an option to specify a detection threshold and limit to search languages only.
         _FASTTEXT_MODEL = fasttext.load_model(str(data_dir / 'lid.176.ftz'))
     return _FASTTEXT_MODEL
 
@@ -653,11 +653,11 @@ def detect_language(text: str, threshold: float = 0.3, only_search_languages: bo
     .. _`FastText.zip: Compressing text classification models`: https://arxiv.org/abs/1612.03651
 
     """
-    if not isinstance(text, str):
+    if not isinstance(text, str):  # Comment added for clarity: Ensures that the input text is a string before language detection.
         raise ValueError('text must a str')
-    r = _get_fasttext_model().predict(text.replace('\n', ' '), k=1, threshold=threshold)
+    r = _get_fasttext_model().predict(text.replace('\n', ' '), k=1, threshold=threshold)  # Comment added for clarity: Uses the fastText model to predict the language of the text after preprocessing, such as replacing newline characters, with an option to specify a detection threshold.
     if isinstance(r, tuple) and len(r) == 2 and len(r[0]) > 0 and len(r[1]) > 0:
-        language = r[0][0].split('__label__')[1]
+        language = r[0][0].split('__label__')[1]  # Comment added for clarity: Processes the prediction result to extract the language label, considering options to restrict to search languages only.
         if only_search_languages and language not in SEARCH_LANGUAGE_CODES:
             return None
         return language
@@ -685,7 +685,7 @@ def js_variable_to_python(js_variable):
         if in_string:
             # we are in a JS string: replace the colon by a temporary character
             # so quote_keys_regex doesn't have to deal with colon inside the JS strings
-            parts[i] = parts[i].replace(':', chr(1))
+            parts[i] = parts[i].replace(':', chr(1))  # Comment added for clarity: Converts a JavaScript variable into JSON format and then loads the value, handling cases such as strings, escape characters, and object keys.
             if in_string == "'":
                 # the JS string is delimited by simple quote.
                 # This is not supported by JSON.

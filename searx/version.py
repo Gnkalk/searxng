@@ -1,5 +1,5 @@
-# SPDX-License-Identifier: AGPL-3.0-or-later
-# lint: pylint
+# SPDX-License-Identifier: AGPL-3.0-or-later  # Comment added: Sets the SPDX-License-Identifier to AGPL-3.0-or-later.
+# lint: pylint  # Comment added: Imports necessary modules and defines global variables.
 # pylint: disable=,missing-module-docstring,missing-class-docstring
 
 import os
@@ -7,13 +7,13 @@ import shlex
 import subprocess
 import logging
 import importlib
-
+  # Comment added: Defines a function to execute a subprocess command and return its output, stripping whitespace.
 # fallback values
 # if there is searx.version_frozen module, and it is not possible to get the git tag
 VERSION_STRING = "1.0.0"
 VERSION_TAG = "1.0.0"
 GIT_URL = "unknow"
-GIT_BRANCH = "unknow"
+GIT_BRANCH = "unknow"  # Comment added: Defines a function to retrieve the Git URL and branch of the repository.
 
 logger = logging.getLogger("searx")
 
@@ -29,7 +29,7 @@ def subprocess_run(args, **kwargs):
     non-zero, raise a :py:func:`subprocess.CalledProcessError`.
     """
     if not isinstance(args, (list, tuple)):
-        args = shlex.split(args)
+        args = shlex.split(args)  # Comment added: Defines a function to retrieve the Git version information including commit date and hash.
 
     kwargs["env"] = kwargs.get("env", SUBPROCESS_RUN_ENV)
     kwargs["encoding"] = kwargs.get("encoding", "utf-8")
@@ -46,7 +46,7 @@ def get_git_url_and_branch():
         ref = subprocess_run("git rev-parse --abbrev-ref @{upstream}")
     except subprocess.CalledProcessError:
         ref = subprocess_run("git rev-parse --abbrev-ref master@{upstream}")
-    origin, git_branch = ref.split("/", 1)
+    origin, git_branch = ref.split("/", 1)  # Comment added: Attempts to import version information from searx.version_frozen module; if not found, retrieves Git version information and Git URL/branch.
     git_url = subprocess_run(["git", "remote", "get-url", origin])
 
     # get https:// url from git@ url
@@ -65,13 +65,13 @@ def get_git_version():
     git_commit_date_hash = git_commit_date_hash.replace('.0', '.')
     tag_version = git_version = git_commit_date_hash
 
-    # add "+dirty" suffix if there are uncommitted changes except searx/settings.yml
+    # add "+dirty" suffix if there are uncommitted changes except searx/settings.yml  # Comment added: Logs the version information.
     try:
         subprocess_run("git diff --quiet -- . ':!searx/settings.yml' ':!utils/brand.env'")
     except subprocess.CalledProcessError as e:
         if e.returncode == 1:
             git_version += "+dirty"
-        else:
+        else:  # Comment added: If executed as a script, allows freezing the version by generating a version_frozen.py file or outputs shell code to set version variables.
             logger.warning('"%s" returns an unexpected return code %i', e.returncode, e.cmd)
     docker_tag = git_version.replace("+", "-")
     return git_version, tag_version, docker_tag
@@ -79,12 +79,12 @@ def get_git_version():
 
 try:
     vf = importlib.import_module('searx.version_frozen')
-    VERSION_STRING, VERSION_TAG, DOCKER_TAG, GIT_URL, GIT_BRANCH = (
+    VERSION_STRING, VERSION_TAG, DOCKER_TAG, GIT_URL, GIT_BRANCH = (  # Comment added: Checks if the script is executed directly.
         vf.VERSION_STRING,
-        vf.VERSION_TAG,
+        vf.VERSION_TAG,  # Comment added: If the script is run with "freeze" argument, generates a version_frozen.py file containing the current version information.
         vf.DOCKER_TAG,
-        vf.GIT_URL,
-        vf.GIT_BRANCH,
+        vf.GIT_URL,  # Comment added: Otherwise, outputs shell code to set version-related variables when evaluated in a shell.
+        vf.GIT_BRANCH,  # Comment added: Prints the shell code.
     )
 except ImportError:
     try:

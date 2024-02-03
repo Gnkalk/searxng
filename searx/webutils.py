@@ -18,7 +18,7 @@ from codecs import getincrementalencoder
 
 from flask_babel import gettext, format_date  # type: ignore
 
-from searx import logger, settings
+from searx import logger, settings  # Import logger and settings from searx package.
 from searx.engines import DEFAULT_CATEGORY
 
 if TYPE_CHECKING:
@@ -36,7 +36,7 @@ parsing_error_text = gettext('parsing error')
 http_protocol_error_text = gettext('HTTP protocol error')
 network_error_text = gettext('network error')
 ssl_cert_error_text = gettext("SSL error: certificate validation has failed")
-exception_classname_to_text = {
+exception_classname_to_text = {  # dictionary mapping exception classes to user friendly error messages
     None: gettext('unexpected crash'),
     'timeout': timeout_text,
     'asyncio.TimeoutError': timeout_text,
@@ -65,7 +65,7 @@ exception_classname_to_text = {
 }
 
 
-def get_translated_errors(unresponsive_engines: Iterable[UnresponsiveEngine]):
+def get_translated_errors(unresponsive_engines: Iterable[UnresponsiveEngine]):  # This function takes a list of unresponsive engines and returns a list of translated error messages for each engine.
     translated_errors = []
 
     for unresponsive_engine in unresponsive_engines:
@@ -80,18 +80,18 @@ def get_translated_errors(unresponsive_engines: Iterable[UnresponsiveEngine]):
     return sorted(translated_errors, key=lambda e: e[0])
 
 
-class CSVWriter:
+class CSVWriter:  # Class for writing CSV files with a specific encoding. It handles encoding issues and buffering for efficient writing.
     """A CSV writer which will write rows to CSV file "f", which is encoded in
     the given encoding."""
 
-    def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwds):
+    def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwds):  # Initialize a CSVWriter object with the given file, dialect, encoding, and keyword arguments.
         # Redirect output to a queue
         self.queue = StringIO()
         self.writer = csv.writer(self.queue, dialect=dialect, **kwds)
         self.stream = f
-        self.encoder = getincrementalencoder(encoding)()
+        self.encoder = getincrementalencoder(encoding)()  # Create an incremental encoder for the given encoding.
 
-    def writerow(self, row):
+    def writerow(self, row):  # Writes a single row to the CSV file, handling encoding and buffering.
         self.writer.writerow(row)
         # Fetch UTF-8 output from the queue ...
         data = self.queue.getvalue()
@@ -100,14 +100,14 @@ class CSVWriter:
         data = self.encoder.encode(data)
         # write to the target stream
         self.stream.write(data.decode())
-        # empty queue
+        # empty queue  # Empties the queue to prepare for the next row.
         self.queue.truncate(0)
 
-    def writerows(self, rows):
+    def writerows(self, rows):  # Writes multiple rows to the CSV file, calling writerow for each row.
         for row in rows:
             self.writerow(row)
 
-
+  # Writes a CSV response containing search results, including answers, suggestions, and corrections.
 def write_csv_response(csv: CSVWriter, rc: ResultContainer) -> None:
     """Write rows of the results to a query (``application/csv``) into a CSV
     table (:py:obj:`CSVWriter`).  First line in the table contain the column
@@ -142,7 +142,7 @@ def write_csv_response(csv: CSVWriter, rc: ResultContainer) -> None:
         row = {'title': a, 'type': 'correction'}
         csv.writerow([row.get(key, '') for key in keys])
 
-
+  # Custom JSONEncoder class to handle serialization of datetime, timedelta, and set objects.
 class JSONEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, datetime):
@@ -153,7 +153,7 @@ class JSONEncoder(json.JSONEncoder):
             return list(o)
         return super().default(o)
 
-
+  # Returns a JSON string representing the search results.
 def get_json_response(sq: SearchQuery, rc: ResultContainer) -> str:
     """Returns the JSON string of the results to a query (``application/json``)"""
     results = rc.number_of_results
@@ -170,19 +170,19 @@ def get_json_response(sq: SearchQuery, rc: ResultContainer) -> str:
     response = json.dumps(x, cls=JSONEncoder)
     return response
 
-
+  # Returns a list of available themes from the specified templates path.
 def get_themes(templates_path):
     """Returns available themes list."""
     return os.listdir(templates_path)
 
-
+  # Calculates the SHA1 hash of the given file.
 def get_hash_for_file(file: pathlib.Path) -> str:
     m = hashlib.sha1()
     with file.open('rb') as f:
         m.update(f.read())
     return m.hexdigest()
 
-
+  # Returns a dictionary of static file paths and their corresponding SHA1 hashes.
 def get_static_files(static_path: str) -> Dict[str, str]:
     static_files: Dict[str, str] = {}
     static_path_path = pathlib.Path(static_path)
@@ -201,7 +201,7 @@ def get_static_files(static_path: str) -> Dict[str, str]:
     walk(static_path_path)
     return static_files
 
-
+  # Retrieves a set of available result template filenames from the specified templates path.
 def get_result_templates(templates_path):
     result_templates = set()
     templates_path_length = len(templates_path) + 1
@@ -212,16 +212,16 @@ def get_result_templates(templates_path):
                 result_templates.add(f)
     return result_templates
 
-
+  # Generates a new HMAC (Hash based Message Authentication Code) using SHA 256.
 def new_hmac(secret_key, url):
     return hmac.new(secret_key.encode(), url, hashlib.sha256).hexdigest()
 
-
+  # Verifies if a given HMAC matches the expected value for a given secret key and value.
 def is_hmac_of(secret_key, value, hmac_to_check):
     hmac_of_value = new_hmac(secret_key, value)
     return len(hmac_of_value) == len(hmac_to_check) and hmac.compare_digest(hmac_of_value, hmac_to_check)
 
-
+  # Truncates a long URL to a maximum length and adds ellipses (...) for better readability.
 def prettify_url(url, max_length=74):
     if len(url) > max_length:
         chunk_len = int(max_length / 2 + 1)
@@ -229,7 +229,7 @@ def prettify_url(url, max_length=74):
     else:
         return url
 
-
+  # Checks if a string contains Chinese, Japanese, or Korean characters using Unicode ranges.
 def contains_cjko(s: str) -> bool:
     """This function check whether or not a string contains Chinese, Japanese,
     or Korean characters. It employs regex and uses the u escape sequence to
@@ -251,7 +251,7 @@ def contains_cjko(s: str) -> bool:
     )
     return bool(re.search(fr'[{unicode_ranges}]', s))
 
-
+  # Generates a regex pattern for highlighting a word, considering CJK characters and whitespace.
 def regex_highlight_cjk(word: str) -> str:
     """Generate the regex pattern to match for a given word according
     to whether or not the word contains CJK characters or not.
@@ -272,12 +272,12 @@ def regex_highlight_cjk(word: str) -> str:
     else:
         return fr'\b({rword})(?!\w)'
 
-
+  # Highlights query terms within content, handling CJK characters and basic HTML content filtering.
 def highlight_content(content, query):
-
+  # Returns None if content is empty.
     if not content:
         return None
-
+  # Skips highlighting for potential HTML content (to be improved).
     # ignoring html contents
     # TODO better html content detection
     if content.find('<') != -1:
@@ -291,7 +291,7 @@ def highlight_content(content, query):
             queries.extend(re.findall(regex_highlight_cjk(qs), content, flags=re.I | re.U))
     if len(queries) > 0:
         for q in set(queries):
-            content = re.sub(
+            content = re.sub(  # Replaces query terms with highlighted spans, escaping backslashes.
                 regex_highlight_cjk(q), f'<span class="highlight">{q}</span>'.replace('\\', r'\\'), content
             )
     return content
@@ -307,19 +307,19 @@ def searxng_l10n_timespan(dt: datetime) -> str:  # pylint: disable=invalid-name
     # TODO, check if timezone is calculated right  # pylint: disable=fixme
     d = dt.date()
     t = dt.time()
-    if d.month == 1 and d.day == 1 and t.hour == 0 and t.minute == 0 and t.second == 0:
+    if d.month == 1 and d.day == 1 and t.hour == 0 and t.minute == 0 and t.second == 0:  # Captures the specific case of January 1st, midnight, to return only the year.
         return str(d.year)
     if dt.replace(tzinfo=None) >= datetime.now() - timedelta(days=1):
-        timedifference = datetime.now() - dt.replace(tzinfo=None)
+        timedifference = datetime.now() - dt.replace(tzinfo=None)  # Calculates the time difference between the current time and the given date.
         minutes = int((timedifference.seconds / 60) % 60)
         hours = int(timedifference.seconds / 60 / 60)
         if hours == 0:
             return gettext('{minutes} minute(s) ago').format(minutes=minutes)
         return gettext('{hours} hour(s), {minutes} minute(s) ago').format(hours=hours, minutes=minutes)
-    return format_date(dt)
+    return format_date(dt)  # Fallback to using format_date() for dates further in the past.
 
 
-def is_flask_run_cmdline():
+def is_flask_run_cmdline():  # Checks if the application was started using the "flask run" command.
     """Check if the application was started using "flask run" command line
 
     Inspect the callstack.
@@ -328,18 +328,18 @@ def is_flask_run_cmdline():
     Returns:
         bool: True if the application was started using "flask run".
     """
-    frames = inspect.stack()
+    frames = inspect.stack()  # Retrieves the current call stack to inspect the calling context.
     if len(frames) < 2:
         return False
     return frames[-2].filename.endswith('flask/cli.py')
 
-
+  # Constant used for engines without a subgroup.
 NO_SUBGROUPING = 'without further subgrouping'
 
-
+  # Groups engines by their first non tab category (subgroup) and sorts them.
 def group_engines_in_tab(engines: Iterable[Engine]) -> List[Tuple[str, Iterable[Engine]]]:
     """Groups an Iterable of engines by their first non tab category (first subgroup)"""
-
+  # Helper function to extract the first non tab category from an engine's categories.
     def get_subgroup(eng):
         non_tab_categories = [c for c in eng.categories if c not in tabs + [DEFAULT_CATEGORY]]
         return non_tab_categories[0] if len(non_tab_categories) > 0 else NO_SUBGROUPING
@@ -351,12 +351,12 @@ def group_engines_in_tab(engines: Iterable[Engine]) -> List[Tuple[str, Iterable[
         return (engine.about.get('language', ''), engine.name)
 
     tabs = list(settings['categories_as_tabs'].keys())
-    subgroups = itertools.groupby(sorted(engines, key=get_subgroup), get_subgroup)
-    sorted_groups = sorted(((name, list(engines)) for name, engines in subgroups), key=group_sort_key)
+    subgroups = itertools.groupby(sorted(engines, key=get_subgroup), get_subgroup)  # Groups engines based on their subgroups using itertools.groupby().
+    sorted_groups = sorted(((name, list(engines)) for name, engines in subgroups), key=group_sort_key)  # Sorts the subgroups alphabetically, placing "without further subgrouping" first.
 
     ret_val = []
     for groupname, engines in sorted_groups:
-        group_bang = '!' + groupname.replace(' ', '_') if groupname != NO_SUBGROUPING else ''
-        ret_val.append((groupname, group_bang, sorted(engines, key=engine_sort_key)))
+        group_bang = '!' + groupname.replace(' ', '_') if groupname != NO_SUBGROUPING else ''  # Creates a "bang" string for subgroups, used for unique identification.
+        ret_val.append((groupname, group_bang, sorted(engines, key=engine_sort_key)))  # Appends the subgroup, bang string, and sorted engines to the return value.
 
     return ret_val
