@@ -1,17 +1,18 @@
 import datetime
 import os
-
-def log_statistics(grouping, number=""):
-    file_name = "searx/statistics.log"
-
-    try:
-        with open(file_name, 'a') as log_file:
+def write(TypeWrite, grouping="", number=""):
+    # opening a file in write or append mode based on the 'TypeWrite' parameter
+    with open("searx/statistics.log", TypeWrite) as log_file:
+            # get the current date and time in "YYYY-MM-DD" format
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d")
+            # create a string log entry with the timestamp, number of results and grouping
             log_entry = f"{timestamp} | Number of results: {number} | Grouping: {grouping}\n"
             log_file.write(log_entry)
+
+def log_statistics(grouping, number):
+    try:
+        # try to append the statistics to the log file
+        write("a", grouping, number)
     except FileNotFoundError:
-        os.makedirs(os.path.dirname(file_name), exist_ok=True)
-        with open(file_name, 'w') as log_file:
-            timestamp = datetime.datetime.now().strftime("%Y-%m-%d")
-            log_entry = f"{timestamp} | Log file created | Number of results: {number} | Grouping: {grouping}\n"
-            log_file.write(log_entry)
+        # if the file does not exist, create it and write the statistics
+        write("w", grouping, number)
