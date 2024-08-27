@@ -3,6 +3,15 @@
   <img src="./src/brand/searxng.svg" alt="MOA" height="256px">
 </div>
 
+___
+**Warning:**
+
+Due to our limitations and challenges, we are currently unable to proceed with the development and continuation of the project until further notice. We prefer not to declare the project as stopped, and we will not be archiving the repository. 
+
+We recommend using **searxng**, as another version for MoA may not be released.
+
+If you want to take over the maintenance of the project, open an issue
+___
 
 MOA is a free and open source search engine based on the searxng project. This program was created with the aim of simplicity and usability for the general public, providing good and usable results while ensuring privacy, transparency and freedom on the Internet.
 
